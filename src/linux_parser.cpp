@@ -2,6 +2,8 @@
 #include <unistd.h>
 #include <string>
 #include <vector>
+#include <limits>
+#include <filesystem>
 
 #include "linux_parser.h"
 
@@ -10,11 +12,20 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+//  Helper method to go to specific line of a file
+//  Credits for this implementation go to Stack overflow user 'Xeo': 
+//  https://stackoverflow.com/questions/5207550/in-c-is-there-a-way-to-go-to-a-specific-line-in-a-text-file
+std::ifstream& LinuxParser::GotoLine(std::ifstream& fileStream, unsigned int lineNumber){
+    fileStream.seekg(std::ios::beg);
+    for(unsigned int i=0; i < lineNumber - 1; ++i){
+        fileStream.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
+    }
+    return fileStream;
+}
+
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::OperatingSystem() {
-  string line;
-  string key;
-  string value;
+  string line, key, value;
   std::ifstream filestream(kOSPath);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {
@@ -36,12 +47,10 @@ string LinuxParser::OperatingSystem() {
 // DONE: An example of how to read data from the filesystem
 string LinuxParser::Kernel() {
   string os, version, kernel;
-  string line;
   std::ifstream filestream(kProcDirectory + kVersionFilename);
   if (filestream.is_open()) {
-    std::getline(filestream, line);
-    std::istringstream linestream(line);
-    linestream >> os >> version >> kernel;
+    GotoLine(filestream, 1);
+    filestream >> os >> version >> kernel;
   }
   return kernel;
 }
@@ -49,43 +58,30 @@ string LinuxParser::Kernel() {
 // BONUS: Update this to use std::filesystem
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
-  DIR* directory = opendir(kProcDirectory.c_str());
-  struct dirent* file;
-  while ((file = readdir(directory)) != nullptr) {
-    // Is this a directory?
-    if (file->d_type == DT_DIR) {
-      // Is every character of the name a digit?
-      string filename(file->d_name);
-      if (std::all_of(filename.begin(), filename.end(), isdigit)) {
-        int pid = stoi(filename);
-        pids.push_back(pid);
-      }
+    std::string directory_name;
+    auto isDigit = [](const std::string& s) { return std::all_of(s.begin(), s.end(), ::isdigit); };
+    for (const auto &directory : std::filesystem::directory_iterator(LinuxParser::kProcDirectory)) {
+        directory_name = directory.path().stem().string();
+        if (isDigit( directory_name ))
+            pids.push_back(stoi(directory_name));
     }
-  }
-  closedir(directory);
   return pids;
 }
 
 // TODO: Read and return the system memory utilization
 float LinuxParser::MemoryUtilization() 
 {
-  int mem_total, mem_free, mem_available, mem_used;
+  int mem_total, mem_available, mem_used;
   float mem_usage;
   string line, key;
   std::ifstream filestream(kProcDirectory + kMeminfoFilename);
   if (filestream.is_open()) {
     // Get first line ("MemTotal:        3884328 kB")
-    std::getline(filestream, line);
-    std::istringstream linestream1(line);
-    linestream1 >> key >> mem_total;
-    // Get second line ("MemFree:         3080864 kB")
-    std::getline(filestream, line);
-    std::istringstream linestream2(line);
-    linestream2 >> key >> mem_free;
-    // Get second line ("MemAvailable:    3618432 kB")
-    std::getline(filestream, line);
-    std::istringstream linestream3(line);
-    linestream3 >> key >> mem_available;
+    GotoLine(filestream, 1);
+    filestream >> key >> mem_total;
+    // Get third line ("MemAvailable:    3618432 kB")
+    GotoLine(filestream, 3);
+    filestream >> key >> mem_available;
   }
   // Compute usage
   mem_used = mem_total - mem_available;
@@ -125,10 +121,28 @@ long LinuxParser::IdleJiffies() { return 0; }
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
 // TODO: Read and return the total number of processes
-int LinuxParser::TotalProcesses() { return 0; }
+int LinuxParser::TotalProcesses() {
+  string key;
+  int value;
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    GotoLine(filestream, 9); // line 9 format: "processes 3273"
+    filestream >> key >> value;
+  }
+  return value;
+}
 
 // TODO: Read and return the number of running processes
-int LinuxParser::RunningProcesses() { return 0; }
+int LinuxParser::RunningProcesses() {
+  string key;
+  int value;
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    GotoLine(filestream, 10); // line 10 format: "procs_running 1"
+    filestream >> key >> value;
+  }
+  return value;
+ }
 
 // TODO: Read and return the command associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
@@ -140,11 +154,34 @@ string LinuxParser::Ram(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Uid(int pid[[maybe_unused]]) { return string(); }
+int LinuxParser::Uid(int pid) {
+  string key;
+  int uid;
+  std::ifstream filestream(kProcDirectory + std::to_string(pid));
+  if (filestream.is_open()) {
+    GotoLine(filestream, 9); // line 9 format: "Uid:	0	0	0	0"
+    filestream >> key >> uid;
+  }
+  return uid;
+}
 
 // TODO: Read and return the user associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::User(int pid[[maybe_unused]]) { return string(); }
+string LinuxParser::User(int pid) {
+  int uid = Uid(pid);
+  string line, p_user, x;
+  int p_uid;
+  std::ifstream filestream(kPasswordPath);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {    // line format: root:x:0:0:root:/root:/bin/bash
+      std::replace(line.begin(), line.end(), ':', ' ');
+      std::istringstream linestream(line);
+      while (linestream >> p_user >> x >> p_uid) {
+        if (p_uid == uid)
+          return p_user;
+      }
+    }
+  }
+}
 
 // TODO: Read and return the uptime of a process
 // REMOVE: [[maybe_unused]] once you define the function
