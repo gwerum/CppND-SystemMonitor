@@ -25,7 +25,7 @@ class Process {
     std::string _user = "user_name";
     std::string _command = "command";
     float _cpu_usage = 0.0;
-    std::string _ram = "0";
+    int _ram_kb = 0;
     long int _uptime = 0;
 };
 

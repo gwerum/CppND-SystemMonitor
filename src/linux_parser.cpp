@@ -56,6 +56,7 @@ string LinuxParser::Kernel() {
 }
 
 // BONUS: Update this to use std::filesystem
+// Credits: https://gist.github.com/unix-beard/5887218
 vector<int> LinuxParser::Pids() {
   vector<int> pids;
     std::string directory_name;
@@ -150,14 +151,29 @@ string LinuxParser::Command(int pid[[maybe_unused]]) { return string(); }
 
 // TODO: Read and return the memory used by a process
 // REMOVE: [[maybe_unused]] once you define the function
-string LinuxParser::Ram(int pid[[maybe_unused]]) { return string(); }
+int LinuxParser::Ram(int pid) {
+  string line, key;
+  int ram_usage = 0;
+  std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatusFilename);
+  if (filestream.is_open()) {
+    while (std::getline(filestream, line)) {    // line format: root:x:0:0:root:/root:/bin/bash
+      std::replace(line.begin(), line.end(), ':', ' ');
+      std::istringstream linestream(line);
+      while (linestream >> key >> ram_usage) {
+        if (key == "VmSize")
+          return ram_usage;
+      }
+    }
+  }
+  return ram_usage;
+}
 
 // TODO: Read and return the user ID associated with a process
 // REMOVE: [[maybe_unused]] once you define the function
 int LinuxParser::Uid(int pid) {
   string key;
-  int uid;
-  std::ifstream filestream(kProcDirectory + std::to_string(pid));
+  int uid = -1;
+  std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatusFilename);
   if (filestream.is_open()) {
     GotoLine(filestream, 9); // line 9 format: "Uid:	0	0	0	0"
     filestream >> key >> uid;
@@ -168,19 +184,21 @@ int LinuxParser::Uid(int pid) {
 // TODO: Read and return the user associated with a process
 string LinuxParser::User(int pid) {
   int uid = Uid(pid);
-  string line, p_user, x;
-  int p_uid;
+  string user_name = "Unknown";
+  string line, x;
+  int user_id;
   std::ifstream filestream(kPasswordPath);
   if (filestream.is_open()) {
     while (std::getline(filestream, line)) {    // line format: root:x:0:0:root:/root:/bin/bash
       std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
-      while (linestream >> p_user >> x >> p_uid) {
-        if (p_uid == uid)
-          return p_user;
+      while (linestream >> user_name >> x >> user_id) {
+        if (user_id == uid)
+          return user_name;
       }
     }
   }
+  return user_name;
 }
 
 // TODO: Read and return the uptime of a process

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <iomanip>
 
 #include "process.h"
 
@@ -15,6 +16,7 @@ Process::Process(int pid)
 : _pid( pid )
 { 
     _user = LinuxParser::User(_pid);
+    _ram_kb = LinuxParser::Ram(_pid);
 }
 Process::~Process() {}
 
@@ -28,7 +30,12 @@ float Process::CpuUtilization() { return _cpu_usage; }
 string Process::Command() { return _command; }
 
 // TODO: Return this process's memory utilization
-string Process::Ram() { return _ram; }
+string Process::Ram() {
+    float ram_mb = (float) _ram_kb / (float) 1000;
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << ram_mb;
+    return stream.str(); 
+}
 
 // TODO: Return the user (name) that generated this process
 string Process::User() { return _user; }
@@ -38,4 +45,6 @@ long int Process::UpTime() { return _uptime; }
 
 // TODO: Overload the "less than" comparison operator for Process objects
 // REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& a[[maybe_unused]]) const { return true; }
+bool Process::operator<(Process const& other) const { 
+    return (_ram_kb < other._ram_kb ? true : false ); 
+}
