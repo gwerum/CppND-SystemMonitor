@@ -17,6 +17,7 @@ Process::Process(int pid)
 { 
     _user = LinuxParser::User(_pid);
     _ram_kb = LinuxParser::Ram(_pid);
+    _cpu_usage = LinuxParser::CpuUtilization(_pid);
 }
 Process::~Process() {}
 
@@ -31,7 +32,7 @@ string Process::Command() { return _command; }
 
 // TODO: Return this process's memory utilization
 string Process::Ram() {
-    float ram_mb = (float) _ram_kb / (float) 1000;
+    float ram_mb = (float) _ram_kb / (float) 1024;
     std::stringstream stream;
     stream << std::fixed << std::setprecision(2) << ram_mb;
     return stream.str(); 
