@@ -1,6 +1,3 @@
-monitor
-a.out
-settings.json
-*.o
-build/*
-*.json
+.vscode/**
+build/**
+.clang-format
