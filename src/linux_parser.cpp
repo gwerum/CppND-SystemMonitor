@@ -121,6 +121,42 @@ long LinuxParser::IdleJiffies() { return 0; }
 // TODO: Read and return CPU utilization
 vector<string> LinuxParser::CpuUtilization() { return {}; }
 
+// Returns CPU utilization for PID process
+// Reads CPU usage values from file /proc/[pid]/stat: https://man7.org/linux/man-pages/man5/proc.5.html
+// Computes CPU utilization according to: https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
+float LinuxParser::CpuUtilization(int pid) {
+    std::string line, comm;
+    int id, stat;
+    char state;
+    std::vector<int> stats;
+    std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatFilename);
+    if (filestream.is_open()) {
+        std::getline(filestream, line);
+        std::stringstream linestream(line);
+        linestream >> id >> comm >> state;
+        // Read residual integer values
+        while(linestream >> stat) {
+            stats.push_back(stat);
+        }
+    }
+    long clock_frequence = sysconf(_SC_CLK_TCK);
+    // Compute total process time including child processes
+    int utime, stime, cutime, cstime, starttime, total_time;
+    utime = stats[10]; // CPU time spent in user code
+    stime = stats[11]; // CPU time spent in kernel code
+    cutime = stats[12]; // Waited-for children's CPU time spent in user code
+    cstime = stats[13]; // Waited-for children's CPU time spent in kernel code
+    starttime = stats[18];  // Time when the process started
+    total_time = utime + stime + cutime + cstime;
+    float process_time = (float) total_time / (float) clock_frequence;
+    // Compute elapsed time since process started (in seconds)
+    float elapsed_time = (float) UpTime() - ( (float) starttime / (float) clock_frequence );
+    // Compute CPU usage in percentage
+    float cpu_usage = 100.0 * ( process_time / elapsed_time );
+
+    return cpu_usage;
+ }
+
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
   string key;
