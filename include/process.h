@@ -22,10 +22,10 @@ class Process {
   // TODO: Declare any necessary private members
  private:
     int _pid;
-    std::string _user = "user_name";
-    std::string _command = "command";
+    std::string _user;
+    std::string _command;
     float _cpu_usage = 0.0;
-    int _ram_kb = 0;
+    int _ram_kb;
     long int _uptime = 0;
 };
 

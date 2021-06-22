@@ -22,13 +22,13 @@ namespace LinuxParser {
   std::ifstream& GotoLine(std::ifstream& fileStream, unsigned int lineNumber);
 
   // System
-  float MemoryUtilization();
-  long UpTime();
-  std::vector<int> Pids();
-  int TotalProcesses();
-  int RunningProcesses();
-  std::string OperatingSystem();
-  std::string Kernel();
+  float MemoryUtilization(); // Done
+  long UpTime(); // Done
+  std::vector<int> Pids(); // Done
+  int TotalProcesses(); // Done
+  int RunningProcesses(); // Done
+  std::string OperatingSystem(); // Done
+  std::string Kernel(); // Done
 
   // CPU
   enum CPUStates {
@@ -53,9 +53,9 @@ namespace LinuxParser {
 
   // Processes
   std::string Command(int pid);
-  int Ram(int pid);
-  int Uid(int pid);
-  std::string User(int pid);
+  int Ram(int pid); // Done
+  int Uid(int pid); // Done
+  std::string User(int pid); // Done
   long int UpTime(int pid);
 
 };  // namespace LinuxParser
