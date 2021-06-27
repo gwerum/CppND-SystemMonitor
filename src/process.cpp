@@ -19,7 +19,7 @@ Process::Process(int pid)
     _user = LinuxParser::User(_pid);
     _ram_kb = LinuxParser::Ram(_pid);
     _command = LinuxParser::Command(_pid);
-    compute_cpu_utilization_and_uptime(_pid);
+    //compute_cpu_utilization_and_uptime(_pid);
 }
 
 Process::~Process() {}
