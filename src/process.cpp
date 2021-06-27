@@ -15,7 +15,7 @@ using std::vector;
 Process::Process(int pid) 
 : _pid( pid )
 {
-    // Compute all values of process variables
+    // Compute process variables
     _user = LinuxParser::User(_pid);
     _ram_kb = LinuxParser::Ram(_pid);
     _command = LinuxParser::Command(_pid);
@@ -24,8 +24,33 @@ Process::Process(int pid)
 
 Process::~Process() {}
 
-// TODO: Return this process's ID
-int Process::Pid() { return _pid; }
+// Returns this process's ID
+int Process::Pid() const { return _pid; }
+
+// TODO: Return this process's CPU utilization
+float Process::CpuUtilization() const { return _cpu_usage; }
+
+// TODO: Return the command that generated this process
+string Process::Command() const { return _command; }
+
+// TODO: Return this process's memory utilization
+string Process::Ram() const {
+    float ram_mb = (float) _ram_kb / (float) 1024;
+    std::stringstream stream;
+    stream << std::fixed << std::setprecision(2) << ram_mb;
+    return stream.str(); 
+}
+
+// Returns the user (name) that generated this process
+string Process::User() const { return _user; }
+
+// Returns the age of this process (in seconds)
+long int Process::UpTime() const { return _uptime; }
+
+// Overloads the "less than" comparison operator for Process objects
+bool Process::operator<(Process const& other) const { 
+    return (_ram_kb < other._ram_kb ? true : false ); 
+}
 
 void Process::compute_cpu_utilization_and_uptime()
 {
@@ -45,40 +70,6 @@ void Process::compute_cpu_utilization_and_uptime()
     float elapsed_time = (float) LinuxParser::UpTime() - ( (float) starttime / (float) clock_frequence );
     // Compute and store CPU usage in member variable
     _cpu_usage = (float) (100.0) * ( process_time / elapsed_time );
-    // Use starttime to compute uptime of process
-    compute_uptime(starttime);
-}
-
-void Process::compute_uptime(unsigned long starttime)
-{
-    long clock_frequence = sysconf(_SC_CLK_TCK);
-    _uptime = starttime / clock_frequence;
-}
-
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() {
-    return _cpu_usage; 
-}
-
-// TODO: Return the command that generated this process
-string Process::Command() { return _command; }
-
-// TODO: Return this process's memory utilization
-string Process::Ram() {
-    float ram_mb = (float) _ram_kb / (float) 1024;
-    std::stringstream stream;
-    stream << std::fixed << std::setprecision(2) << ram_mb;
-    return stream.str(); 
-}
-
-// TODO: Return the user (name) that generated this process
-string Process::User() { return _user; }
-
-// TODO: Return the age of this process (in seconds)
-long int Process::UpTime() { return _uptime; }
-
-// TODO: Overload the "less than" comparison operator for Process objects
-// REMOVE: [[maybe_unused]] once you define the function
-bool Process::operator<(Process const& other) const { 
-    return (_ram_kb < other._ram_kb ? true : false ); 
+    // Compute uptime of this process
+    _uptime = (long int) starttime / (long int) clock_frequence;
 }
