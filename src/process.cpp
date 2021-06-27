@@ -47,9 +47,14 @@ string Process::User() { return _user; }
 // Returns the age of this process (in seconds)
 long Process::UpTime() { return _uptime; }
 
-// Overloads the "less than" comparison operator for Process objects
-bool Process::operator<(Process const& other) const { 
-    return (_ram_kb < other._ram_kb ? true : false ); 
+// Overloads the less operator according to cpu utilization
+bool Process::operator<(Process const& rhs) const { 
+  return this->_cpu_usage < rhs._cpu_usage;
+}
+
+// Overloads the greater operator according to cpu utilization
+bool Process::operator>(Process const& rhs) const { 
+  return this->_cpu_usage > rhs._cpu_usage;
 }
 
 void Process::compute_cpu_utilization_and_uptime(int pid)
