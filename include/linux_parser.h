@@ -51,10 +51,6 @@ namespace LinuxParser {
   int Uid(int pid); // Done
   std::string User(int pid); // Done
   std::vector<unsigned long> CpuUtilization(int pid); // Done
-  long Jiffies();
-  long ActiveJiffies();
-  long ActiveJiffies(int pid);
-  long IdleJiffies();
 
 };  // namespace LinuxParser
 

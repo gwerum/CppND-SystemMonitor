@@ -23,7 +23,7 @@ std::ifstream& LinuxParser::GotoLine(std::ifstream& fileStream, unsigned int lin
     return fileStream;
 }
 
-// DONE: An example of how to read data from the filesystem
+// Returns operating system name
 string LinuxParser::OperatingSystem() {
   string line, key, value;
   std::ifstream filestream(kOSPath);
@@ -44,7 +44,7 @@ string LinuxParser::OperatingSystem() {
   return value;
 }
 
-// DONE: An example of how to read data from the filesystem
+// Returns kernel version of the system
 string LinuxParser::Kernel() {
   string os, version, kernel;
   std::ifstream filestream(kProcDirectory + kVersionFilename);
@@ -69,7 +69,7 @@ vector<int> LinuxParser::Pids() {
   return pids;
 }
 
-// TODO: Read and return the system memory utilization
+// Returns the system memory utilization
 float LinuxParser::MemoryUtilization() 
 {
   int mem_total, mem_available, mem_used;
@@ -90,7 +90,7 @@ float LinuxParser::MemoryUtilization()
   return mem_usage;
 }
 
-// TODO: Read and return the system uptime
+// Returns the system uptime
 long LinuxParser::UpTime() {
   float uptime;
   string line;
@@ -105,20 +105,7 @@ long LinuxParser::UpTime() {
   return (long) uptime;
  }
 
-// TODO: Read and return the number of jiffies for the system
-long LinuxParser::Jiffies() { return 0; }
-
-// TODO: Read and return the number of active jiffies for a PID
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::ActiveJiffies(int pid[[maybe_unused]]) { return 0; }
-
-// TODO: Read and return the number of active jiffies for the system
-long LinuxParser::ActiveJiffies() { return 0; }
-
-// TODO: Read and return the number of idle jiffies for the system
-long LinuxParser::IdleJiffies() { return 0; }
-
-// TODO: Read and return CPU utilization
+// Returns CPU times values required for computation CPU utilization of total system
 vector<int> LinuxParser::CpuUtilization() {
   vector<int> times;
   int value;
@@ -141,7 +128,7 @@ vector<int> LinuxParser::CpuUtilization() {
   return times;
 }
 
-// Returns CPU utilization for PID process
+// Returns CPU times values required for computation CPU utilization of single process (PID)
 // Reads CPU usage values from file /proc/[pid]/stat: https://man7.org/linux/man-pages/man5/proc.5.html
 // Computes CPU utilization according to: https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
 std::vector<unsigned long> LinuxParser::CpuUtilization(int pid) {
@@ -202,8 +189,7 @@ string LinuxParser::Command(int pid)
   return command;
 }
 
-// TODO: Read and return the memory used by a process
-// REMOVE: [[maybe_unused]] once you define the function
+// Returns the memory used by a process
 int LinuxParser::Ram(int pid) {
   string line, key;
   int ram_usage = 0;
@@ -221,8 +207,7 @@ int LinuxParser::Ram(int pid) {
   return ram_usage;
 }
 
-// TODO: Read and return the user ID associated with a process
-// REMOVE: [[maybe_unused]] once you define the function
+// Returns the user ID associated with a process
 int LinuxParser::Uid(int pid) {
   string key;
   int uid = -1;

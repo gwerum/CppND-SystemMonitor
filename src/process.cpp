@@ -19,7 +19,7 @@ Process::Process(int pid)
     _user = LinuxParser::User(_pid);
     _ram_kb = LinuxParser::Ram(_pid);
     _command = LinuxParser::Command(_pid);
-    compute_cpu_utilization_and_uptime();
+    compute_cpu_utilization_and_uptime(_pid);
 }
 
 Process::~Process() {}
@@ -52,10 +52,10 @@ bool Process::operator<(Process const& other) const {
     return (_ram_kb < other._ram_kb ? true : false ); 
 }
 
-void Process::compute_cpu_utilization_and_uptime()
+void Process::compute_cpu_utilization_and_uptime(int pid)
 {
     // Read required CPU times spent from proc/pid/stat
-    std::vector<unsigned long> stats = LinuxParser::CpuUtilization(_pid);
+    std::vector<unsigned long> stats = LinuxParser::CpuUtilization(pid);
     // Compute total process time including child processes
     long clock_frequence = sysconf(_SC_CLK_TCK);
     unsigned long utime, stime, cutime, cstime, starttime, total_time;
