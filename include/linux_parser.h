@@ -44,7 +44,7 @@ namespace LinuxParser {
     kGuestNice_
   };
   
-  std::vector<std::string> CpuUtilization();
+  std::vector<int> CpuUtilization();
   float CpuUtilization(int pid);
   long Jiffies();
   long ActiveJiffies();

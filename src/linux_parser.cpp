@@ -119,7 +119,27 @@ long LinuxParser::ActiveJiffies() { return 0; }
 long LinuxParser::IdleJiffies() { return 0; }
 
 // TODO: Read and return CPU utilization
-vector<string> LinuxParser::CpuUtilization() { return {}; }
+vector<int> LinuxParser::CpuUtilization() {
+  vector<int> times;
+  int value;
+  string cpu, line;
+  std::ifstream filestream(kProcDirectory + kStatFilename);
+  if (filestream.is_open()) {
+    // Read first line with total CPU times
+    //
+    //      user    nice  system  idle      iowait irq  softirq  steal  guest  guest_nice
+    // cpu  1013149 64008 1239265 680592396 403525 0    26296    0      0      0
+    //
+    // (will be used to compute CPU utilization according to https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux)
+    std::getline(filestream, line);
+    std::istringstream linestream(line);
+    linestream >> cpu;
+    while(linestream >> value) {
+      times.push_back(value);
+    };
+  };
+  return times;
+}
 
 // Returns CPU utilization for PID process
 // Reads CPU usage values from file /proc/[pid]/stat: https://man7.org/linux/man-pages/man5/proc.5.html
