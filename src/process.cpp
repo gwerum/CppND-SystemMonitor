@@ -71,5 +71,5 @@ void Process::compute_cpu_utilization_and_uptime()
     // Compute and store CPU usage in member variable
     _cpu_usage = (float) (100.0) * ( process_time / elapsed_time );
     // Compute uptime of this process
-    _uptime = (long int) starttime / (long int) clock_frequence;
+    //_uptime = (long int) starttime / (long int) clock_frequence;
 }

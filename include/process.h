@@ -19,14 +19,13 @@ class Process {
     long int UpTime() const;       
     bool operator<(Process const& a) const;
 
-  // TODO: Declare any necessary private members
  private:
     int _pid;
     std::string _user;
     std::string _command;
     float _cpu_usage;
     int _ram_kb;
-    long int _uptime;
+    long int _uptime = 0;
 
     void compute_cpu_utilization_and_uptime();
 };
