@@ -19,7 +19,7 @@ Process::Process(int pid)
     _user = LinuxParser::User(_pid);
     _ram_kb = LinuxParser::Ram(_pid);
     _command = LinuxParser::Command(_pid);
-    compute_cpu_utilization_and_uptime(_pid);
+    //compute_cpu_utilization_and_uptime(_pid);
 }
 
 Process::~Process() {}
@@ -62,7 +62,6 @@ void Process::compute_cpu_utilization_and_uptime(int pid)
     // Read required CPU times spent from proc/pid/stat
     vector<unsigned long> stats = LinuxParser::CpuUtilization(pid);
     // Compute total process time including child processes
-    long clock_frequence = sysconf(_SC_CLK_TCK);
     unsigned long utime, stime, cutime, cstime, starttime, total_time;
     utime = stats[10]; // CPU time spent in user code
     stime = stats[11]; // CPU time spent in kernel code
@@ -71,11 +70,11 @@ void Process::compute_cpu_utilization_and_uptime(int pid)
     starttime = stats[18];  // Time when the process started
     total_time = utime + stime + cutime + cstime;
     // Compute elapsed time since process started (in seconds)
-    float process_time = (float) total_time / (float) clock_frequence;
-    float process_uptime = (float) starttime / (float) clock_frequence;
-    float elapsed_time = (float) LinuxParser::UpTime() - process_uptime;
+    long process_time = total_time / sysconf(_SC_CLK_TCK);
+    long process_uptime = starttime / sysconf(_SC_CLK_TCK);
+    long elapsed_time = LinuxParser::UpTime() - process_uptime;
     // Compute and store CPU usage in member variable
-     _cpu_usage = (float) (100.0) * ( process_time / elapsed_time );
+     _cpu_usage = 100.0F * ( (float) process_time / (float) elapsed_time );
     // Store process uptime (in seconds)
     _uptime = (long) process_uptime;
 }
