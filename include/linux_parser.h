@@ -45,7 +45,7 @@ namespace LinuxParser {
   };
   
   std::vector<int> CpuUtilization();
-  float CpuUtilization(int pid);
+  std::vector<int> CpuUtilization(int pid);
   long Jiffies();
   long ActiveJiffies();
   long ActiveJiffies(int pid);

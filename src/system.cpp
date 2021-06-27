@@ -16,7 +16,7 @@ using std::string;
 using std::vector;
 
 // Returns the system's CPU
-Processor& System::Cpu() { return cpu_; }
+Processor& System::Cpu() { return _cpu; }
 
 // Returns a container composed of the system's processes
 vector<Process>& System::Processes() {
@@ -24,7 +24,7 @@ vector<Process>& System::Processes() {
     vector<int> pids = LinuxParser::Pids();
     // Create process instance for each pid
     for (const auto &pid : pids)
-        _processes.push_back(Process(pid));
+        _processes.emplace_back(Process(pid));
     // Sort in descending order
     std::sort(_processes.rbegin(), _processes.rend());
     return _processes; 

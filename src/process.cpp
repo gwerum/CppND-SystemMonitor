@@ -26,7 +26,26 @@ Process::~Process() {}
 int Process::Pid() { return _pid; }
 
 // TODO: Return this process's CPU utilization
-float Process::CpuUtilization() { return _cpu_usage; }
+float Process::CpuUtilization() {
+    // Read required CPU times spent from proc/pid/stat
+    std::vector<int> stats = LinuxParser::CpuUtilization(_pid);
+    // Compute total process time including child processes
+    long clock_frequence = sysconf(_SC_CLK_TCK);
+    int utime, stime, cutime, cstime, starttime, total_time;
+    utime = stats[10]; // CPU time spent in user code
+    stime = stats[11]; // CPU time spent in kernel code
+    cutime = stats[12]; // Waited-for children's CPU time spent in user code
+    cstime = stats[13]; // Waited-for children's CPU time spent in kernel code
+    starttime = stats[18];  // Time when the process started
+    total_time = utime + stime + cutime + cstime;
+    float process_time = (float) total_time / (float) clock_frequence;
+    // Compute elapsed time since process started (in seconds)
+    float elapsed_time = (float) UpTime() - ( (float) starttime / (float) clock_frequence );
+    // Update CPU usage in percentage
+    _cpu_usage = (float) (100.0) * ( process_time / elapsed_time );
+
+    return _cpu_usage; 
+}
 
 // TODO: Return the command that generated this process
 string Process::Command() { return _command; }
