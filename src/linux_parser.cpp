@@ -150,6 +150,11 @@ vector<unsigned long> LinuxParser::CpuUtilization(int pid) {
             stats.push_back(stat);
         }
     }
+    else
+    {
+      for(int i = 0; i<20; i++)
+        stats.push_back(0);
+    }
     return stats;
  }
 
