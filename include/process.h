@@ -16,16 +16,16 @@ class Process {
     std::string Command();   
     float CpuUtilization();
     std::string Ram();       
-    long int UpTime();       
+    long UpTime();       
     bool operator<(Process const& a) const;
 
  private:
-    int _pid;
-    std::string _user;
-    std::string _command;
-    float _cpu_usage;
-    int _ram_kb;
-    long int _uptime = 0;
+    int _pid = 0;
+    std::string _user = "unknown";
+    std::string _command = "unknown";
+    float _cpu_usage = 0.0;
+    int _ram_kb = 0;
+    long _uptime = 0;
 
     void compute_cpu_utilization_and_uptime(int pid);
 };

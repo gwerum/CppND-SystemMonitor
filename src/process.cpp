@@ -45,7 +45,7 @@ string Process::Ram() {
 string Process::User() { return _user; }
 
 // Returns the age of this process (in seconds)
-long int Process::UpTime() { return _uptime; }
+long Process::UpTime() { return _uptime; }
 
 // Overloads the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& other) const { 
@@ -71,5 +71,5 @@ void Process::compute_cpu_utilization_and_uptime(int pid)
     // Compute and store CPU usage in member variable
     _cpu_usage = (float) (100.0) * ( process_time / elapsed_time );
     // Compute uptime of this process
-    //_uptime = (long int) starttime / (long int) clock_frequence;
+    _uptime = starttime / clock_frequence;
 }
