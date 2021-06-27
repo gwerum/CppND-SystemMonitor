@@ -24,9 +24,12 @@ class Process {
     int _pid;
     std::string _user;
     std::string _command;
-    float _cpu_usage = 0.0;
+    float _cpu_usage;
     int _ram_kb;
-    long int _uptime = 0;
+    long int _uptime;
+
+    void compute_cpu_utilization_and_uptime();
+    void compute_uptime(unsigned long starttime);
 };
 
 #endif

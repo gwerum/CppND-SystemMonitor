@@ -21,7 +21,7 @@ namespace LinuxParser {
   // Helpers methods
   std::ifstream& GotoLine(std::ifstream& fileStream, unsigned int lineNumber);
 
-  // System
+  // Methods to compute system states
   float MemoryUtilization(); // Done
   long UpTime(); // Done
   std::vector<int> Pids(); // Done
@@ -29,6 +29,7 @@ namespace LinuxParser {
   int RunningProcesses(); // Done
   std::string OperatingSystem(); // Done
   std::string Kernel(); // Done
+  std::vector<int> CpuUtilization(); // Done
 
   // CPU
   enum CPUStates {
@@ -43,20 +44,17 @@ namespace LinuxParser {
     kGuest_,
     kGuestNice_
   };
-  
-  std::vector<int> CpuUtilization();
-  std::vector<unsigned long> CpuUtilization(int pid);
+
+  // Methods to compute process state
+  std::string Command(int pid); // Done
+  int Ram(int pid); // Done
+  int Uid(int pid); // Done
+  std::string User(int pid); // Done
+  std::vector<unsigned long> CpuUtilization(int pid); // Done
   long Jiffies();
   long ActiveJiffies();
   long ActiveJiffies(int pid);
   long IdleJiffies();
-
-  // Processes
-  std::string Command(int pid);
-  int Ram(int pid); // Done
-  int Uid(int pid); // Done
-  std::string User(int pid); // Done
-  long int UpTime(int pid);
 
 };  // namespace LinuxParser
 

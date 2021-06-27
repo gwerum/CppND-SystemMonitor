@@ -7,7 +7,7 @@ float Processor::Utilization()
   int prev_idle = _idle;
   int prev_total = _total;
   // Compute new idle and  non-idle times
-  this->compute_idle_and_non_idle_times();
+  compute_idle_and_non_idle_times();
   // Compute deltas
   int total_delta = _total - prev_total;
   int idle_delta = _idle - prev_idle;

@@ -14,19 +14,21 @@ using std::vector;
 // Define constructor and destructor
 Process::Process(int pid) 
 : _pid( pid )
-{ 
+{
+    // Compute all values of process variables
     _user = LinuxParser::User(_pid);
     _ram_kb = LinuxParser::Ram(_pid);
     _command = LinuxParser::Command(_pid);
-    //_cpu_usage = LinuxParser::CpuUtilization(_pid);
+    compute_cpu_utilization_and_uptime();
 }
+
 Process::~Process() {}
 
 // TODO: Return this process's ID
 int Process::Pid() { return _pid; }
 
-// TODO: Return this process's CPU utilization
-float Process::CpuUtilization() {
+void Process::compute_cpu_utilization_and_uptime()
+{
     // Read required CPU times spent from proc/pid/stat
     std::vector<unsigned long> stats = LinuxParser::CpuUtilization(_pid);
     // Compute total process time including child processes
@@ -41,9 +43,20 @@ float Process::CpuUtilization() {
     float process_time = (float) total_time / (float) clock_frequence;
     // Compute elapsed time since process started (in seconds)
     float elapsed_time = (float) LinuxParser::UpTime() - ( (float) starttime / (float) clock_frequence );
-    // Update CPU usage in percentage
+    // Compute and store CPU usage in member variable
     _cpu_usage = (float) (100.0) * ( process_time / elapsed_time );
+    // Use starttime to compute uptime of process
+    compute_uptime(starttime);
+}
 
+void Process::compute_uptime(unsigned long starttime)
+{
+    long clock_frequence = sysconf(_SC_CLK_TCK);
+    _uptime = starttime / clock_frequence;
+}
+
+// TODO: Return this process's CPU utilization
+float Process::CpuUtilization() {
     return _cpu_usage; 
 }
 

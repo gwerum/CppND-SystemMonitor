@@ -234,7 +234,7 @@ int LinuxParser::Uid(int pid) {
   return uid;
 }
 
-// TODO: Read and return the user associated with a process
+// Returns the user associated with a process PID
 string LinuxParser::User(int pid) {
   int uid = Uid(pid);
   string user_name = "Unknown";
@@ -253,7 +253,3 @@ string LinuxParser::User(int pid) {
   }
   return user_name;
 }
-
-// TODO: Read and return the uptime of a process
-// REMOVE: [[maybe_unused]] once you define the function
-long LinuxParser::UpTime(int pid[[maybe_unused]]) { return 0; }
