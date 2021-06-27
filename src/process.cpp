@@ -25,16 +25,16 @@ Process::Process(int pid)
 Process::~Process() {}
 
 // Returns this process's ID
-int Process::Pid() const { return _pid; }
+int Process::Pid() { return _pid; }
 
 // TODO: Return this process's CPU utilization
-float Process::CpuUtilization() const { return _cpu_usage; }
+float Process::CpuUtilization() { return _cpu_usage; }
 
 // TODO: Return the command that generated this process
-string Process::Command() const { return _command; }
+string Process::Command() { return _command; }
 
 // TODO: Return this process's memory utilization
-string Process::Ram() const {
+string Process::Ram() {
     float ram_mb = (float) _ram_kb / (float) 1024;
     std::stringstream stream;
     stream << std::fixed << std::setprecision(2) << ram_mb;
@@ -42,10 +42,10 @@ string Process::Ram() const {
 }
 
 // Returns the user (name) that generated this process
-string Process::User() const { return _user; }
+string Process::User() { return _user; }
 
 // Returns the age of this process (in seconds)
-long int Process::UpTime() const { return _uptime; }
+long int Process::UpTime() { return _uptime; }
 
 // Overloads the "less than" comparison operator for Process objects
 bool Process::operator<(Process const& other) const { 
