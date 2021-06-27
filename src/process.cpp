@@ -28,10 +28,10 @@ int Process::Pid() { return _pid; }
 // TODO: Return this process's CPU utilization
 float Process::CpuUtilization() {
     // Read required CPU times spent from proc/pid/stat
-    std::vector<int> stats = LinuxParser::CpuUtilization(_pid);
+    std::vector<unsigned long> stats = LinuxParser::CpuUtilization(_pid);
     // Compute total process time including child processes
     long clock_frequence = sysconf(_SC_CLK_TCK);
-    int utime, stime, cutime, cstime, starttime, total_time;
+    unsigned long utime, stime, cutime, cstime, starttime, total_time;
     utime = stats[10]; // CPU time spent in user code
     stime = stats[11]; // CPU time spent in kernel code
     cutime = stats[12]; // Waited-for children's CPU time spent in user code
