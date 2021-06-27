@@ -40,7 +40,7 @@ float Process::CpuUtilization() {
     total_time = utime + stime + cutime + cstime;
     float process_time = (float) total_time / (float) clock_frequence;
     // Compute elapsed time since process started (in seconds)
-    float elapsed_time = (float) UpTime() - ( (float) starttime / (float) clock_frequence );
+    float elapsed_time = (float) LinuxParser::UpTime() - ( (float) starttime / (float) clock_frequence );
     // Update CPU usage in percentage
     _cpu_usage = (float) (100.0) * ( process_time / elapsed_time );
 
