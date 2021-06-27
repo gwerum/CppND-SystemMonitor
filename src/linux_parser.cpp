@@ -144,11 +144,12 @@ vector<int> LinuxParser::CpuUtilization() {
 // Returns CPU utilization for PID process
 // Reads CPU usage values from file /proc/[pid]/stat: https://man7.org/linux/man-pages/man5/proc.5.html
 // Computes CPU utilization according to: https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
-std::vector<int> LinuxParser::CpuUtilization(int pid) {
+std::vector<unsigned long> LinuxParser::CpuUtilization(int pid) {
     std::string line, comm;
-    int id, stat;
+    int id;
+    unsigned long stat;
     char state;
-    std::vector<int> stats;
+    std::vector<unsigned long> stats;
     std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatFilename);
     if (filestream.is_open()) {
         std::getline(filestream, line);
