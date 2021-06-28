@@ -4,6 +4,7 @@
 #include <fstream>
 #include <regex>
 #include <string>
+#include <vector>
 
 namespace LinuxParser {
   // Paths
@@ -29,7 +30,7 @@ namespace LinuxParser {
   int RunningProcesses(); // Done
   std::string OperatingSystem(); // Done
   std::string Kernel(); // Done
-  std::vector<int> CpuUtilization(); // Done
+  std::vector<std::string> CpuUtilization(); // Done
 
   // CPU
   enum CPUStates {
@@ -45,12 +46,18 @@ namespace LinuxParser {
     kGuestNice_
   };
 
+  // Computing Jiffies
+  long Jiffies();
+  long IdleJiffies();
+  long ActiveJiffies();
+  long ActiveJiffies(int pid);
+  
   // Methods to compute process state
   std::string Command(int pid); // Done
   int Ram(int pid); // Done
   int Uid(int pid); // Done
   std::string User(int pid); // Done
-  std::vector<unsigned long> CpuUtilization(int pid); // Done
+  long Uptime(int pid); // Done
 
 };  // namespace LinuxParser
 

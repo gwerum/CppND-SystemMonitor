@@ -28,7 +28,7 @@ class Process {
     int _ram_kb = 0;
     long _uptime = 0;
 
-    void compute_cpu_utilization_and_uptime(int pid);
+    float compute_cpu_utilization(int pid);
 };
 
 #endif

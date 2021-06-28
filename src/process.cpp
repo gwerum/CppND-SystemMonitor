@@ -16,10 +16,11 @@ Process::Process(int pid)
 : _pid( pid )
 {
     // Compute process variables
-    _user = LinuxParser::User(_pid);
-    _ram_kb = LinuxParser::Ram(_pid);
-    _command = LinuxParser::Command(_pid);
-    //compute_cpu_utilization_and_uptime(_pid);
+    _user = LinuxParser::User(pid);
+    _ram_kb = LinuxParser::Ram(pid);
+    _command = LinuxParser::Command(pid);
+    _cpu_usage = compute_cpu_utilization(pid);
+    _uptime = LinuxParser::UpTime(pid);
 }
 
 Process::~Process() {}
@@ -57,24 +58,12 @@ bool Process::operator>(Process const& rhs) const {
   return this->_cpu_usage > rhs._cpu_usage;
 }
 
-void Process::compute_cpu_utilization_and_uptime(int pid)
+// Computes CPU utilization from active Jiffies and returns it
+float Process::compute_cpu_utilization(int pid)
 {
-    // Read required CPU times spent from proc/pid/stat
-    vector<unsigned long> stats = LinuxParser::CpuUtilization(pid);
-    // Compute total process time including child processes
-    unsigned long utime, stime, cutime, cstime, starttime, total_time;
-    utime = stats[10]; // CPU time spent in user code
-    stime = stats[11]; // CPU time spent in kernel code
-    cutime = stats[12]; // Waited-for children's CPU time spent in user code
-    cstime = stats[13]; // Waited-for children's CPU time spent in kernel code
-    starttime = stats[18];  // Time when the process started
-    total_time = utime + stime + cutime + cstime;
-    // Compute elapsed time since process started (in seconds)
-    long process_time = total_time / sysconf(_SC_CLK_TCK);
-    long process_uptime = starttime / sysconf(_SC_CLK_TCK);
-    long elapsed_time = LinuxParser::UpTime() - process_uptime;
+    // Get active Jiffies
+    float active_jiffies_process = static_cast<float>(LinuxParser::ActiveJiffies(pid));
+    float active_jiffies_processor = static_cast<float>(LinuxParser::ActiveJiffies());
     // Compute and store CPU usage in member variable
-     _cpu_usage = 100.0F * ( (float) process_time / (float) elapsed_time );
-    // Store process uptime (in seconds)
-    _uptime = (long) process_uptime;
+    return (active_jiffies_process / active_jiffies_processor);
 }

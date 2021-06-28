@@ -12,6 +12,11 @@ using std::string;
 using std::to_string;
 using std::vector;
 
+
+//-----------------------------------------------------------------------------
+// Helpers
+//-----------------------------------------------------------------------------
+
 //  Helper method to go to specific line of a file
 //  Credits for this implementation go to Stack overflow user 'Xeo': 
 //  https://stackoverflow.com/questions/5207550/in-c-is-there-a-way-to-go-to-a-specific-line-in-a-text-file
@@ -22,6 +27,10 @@ std::ifstream& LinuxParser::GotoLine(std::ifstream& fileStream, unsigned int lin
     }
     return fileStream;
 }
+
+//-----------------------------------------------------------------------------
+// System
+//-----------------------------------------------------------------------------
 
 // Returns operating system name
 string LinuxParser::OperatingSystem() {
@@ -105,11 +114,10 @@ long LinuxParser::UpTime() {
   return (long) uptime;
  }
 
-// Returns CPU times values required for computation CPU utilization of total system
-vector<int> LinuxParser::CpuUtilization() {
-  vector<int> times;
-  int value;
-  string cpu, line;
+ // Returns CPU times values required for computation CPU utilization of total system
+vector<string> LinuxParser::CpuUtilization() {
+  vector<string> times;
+  string skip_cpu_name, time, line;
   std::ifstream filestream(kProcDirectory + kStatFilename);
   if (filestream.is_open()) {
     // Read first line with total CPU times
@@ -120,43 +128,71 @@ vector<int> LinuxParser::CpuUtilization() {
     // (will be used to compute CPU utilization according to https://stackoverflow.com/questions/23367857/accurate-calculation-of-cpu-usage-given-in-percentage-in-linux)
     std::getline(filestream, line);
     std::istringstream linestream(line);
-    linestream >> cpu;
-    while(linestream >> value) {
-      times.push_back(value);
+    linestream >> skip_cpu_name;
+    while(linestream >> time) {
+      times.push_back(time);
     };
   };
   return times;
 }
 
-// Returns CPU times values required for computation CPU utilization of single process (PID)
-// Reads CPU usage values from file /proc/[pid]/stat: https://man7.org/linux/man-pages/man5/proc.5.html
+//-----------------------------------------------------------------------------
+// Processor
+//-----------------------------------------------------------------------------
+
+// Read and return the number of jiffies for the system
+long LinuxParser::Jiffies() { 
+  vector<string> jiffies = CpuUtilization();
+  long total_jiffies = 0;
+  for(string jiffie : jiffies) {
+    total_jiffies += std::stoi(jiffie);
+  }
+  return total_jiffies;
+}
+
+// Read and return the number of idle jiffies for the system
+long LinuxParser::IdleJiffies() { 
+  vector<string> jiffies = CpuUtilization();
+  long idle_jiffies = 0;
+  long idle = std::stoi(jiffies[3]);
+  long iowait = std::stoi(jiffies[4]);
+  idle_jiffies = idle + iowait;
+  return idle_jiffies;
+}
+
+// Read and return the number of active jiffies for the system
+long LinuxParser::ActiveJiffies() { 
+  long active_jiffies = 0;
+  active_jiffies = Jiffies() - IdleJiffies();
+  return active_jiffies;
+}
+
+// Reads and returns the number of active jiffies for a PID
+// Reads jiffie values from file /proc/[pid]/stat: https://man7.org/linux/man-pages/man5/proc.5.html
 // Computes CPU utilization according to: https://stackoverflow.com/questions/16726779/how-do-i-get-the-total-cpu-usage-of-an-application-from-proc-pid-stat/16736599#16736599
-vector<unsigned long> LinuxParser::CpuUtilization(int pid) {
-    std::string line, comm;
-    int id;
-    unsigned long stat;
-    char state;
-    vector<unsigned long> stats;
-    std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatFilename);
-    if (filestream.is_open()) {
-        std::getline(filestream, line);
-        std::stringstream linestream(line);
-        // Reading line with the following format:
-        // id   comm     state                                            utime  stime  cutime  cstime            starttime
-        // 1823 (mysqld) S      1 1790 1790 0 -1 1077936192 34164 0 110 0 174810 260004 0       0       20 0 31 0 1867        2827812864 34467 18446744073709551615 1 1 0 0 0 0 552967 4096 26345 0 0 0 -1 0 0 0 107738 0 0 0 0 0 0 0 0 0 0
-        linestream >> id >> comm >> state;
-        // Read residual integer values
-        while(linestream >> stat) {
-            stats.push_back(stat);
-        }
+long LinuxParser::ActiveJiffies(int pid) { 
+  long active_jiffies = 0;
+  string utime, stime, cutime, cstime;
+  string skip_values, line;
+  std::ifstream stream(kProcDirectory + std::to_string(pid)+ kStatFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line); 
+    // Reading line with the following format:
+    // id   comm     state                                            utime  stime  cutime  cstime            starttime
+    // 1823 (mysqld) S      1 1790 1790 0 -1 1077936192 34164 0 110 0 174810 260004 0       0       20 0 31 0 1867        2827812864 34467 18446744073709551615 1 1 0 0 0 0 552967 4096 26345 0 0 0 -1 0 0 0 107738 0 0 0 0 0 0 0 0 0 0
+    for(int i = 1; i < 14; ++i) {
+      linestream >> skip_values;
     }
-    else
-    {
-      for(int i = 0; i<20; i++)
-        stats.push_back(0);
-    }
-    return stats;
- }
+    linestream >> utime >> stime;
+  }
+  active_jiffies = std::atol(utime.c_str()) + std::atol(stime.c_str()) + std::atol(cutime.c_str()) + std::atol(cstime.c_str());
+  return active_jiffies;
+}
+
+//-----------------------------------------------------------------------------
+// Process
+//-----------------------------------------------------------------------------
 
 // TODO: Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
@@ -242,4 +278,21 @@ string LinuxParser::User(int pid) {
     }
   }
   return user_name;
+}
+
+// Returns the uptime of a process
+long LinuxParser::UpTime(int pid) { 
+  long ticks = 0;
+  string line;
+  string skip_value;
+  std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line); 
+    for(int i = 1; i < 22; ++i) {
+      linestream >> skip_value;
+    }
+    linestream >> ticks;
+  }
+  return ticks / sysconf(_SC_CLK_TCK);
 }
