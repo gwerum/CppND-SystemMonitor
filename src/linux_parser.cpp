@@ -240,7 +240,7 @@ int LinuxParser::Ram(int pid) {
       std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
       while (linestream >> key >> ram_usage) {
-        if (key == "VmSize")
+        if (key == "VmData") // To receive physical RAM instead of virtual RAM with "VmSize"
           return ram_usage;
       }
     }
@@ -282,7 +282,7 @@ string LinuxParser::User(int pid) {
 
 // Returns the uptime of a process (in seconds)
 long LinuxParser::UpTime(int pid) { 
-  long ticks = 0;
+  long starttime = 0;
   string line;
   string skip_value;
   std::ifstream stream(kProcDirectory + std::to_string(pid) + kStatFilename);
@@ -292,7 +292,18 @@ long LinuxParser::UpTime(int pid) {
     for(int i = 1; i < 22; ++i) {
       linestream >> skip_value;
     }
-    linestream >> ticks;
+    linestream >> starttime;
   }
-  return ticks / sysconf(_SC_CLK_TCK);
+  // Check kernel version (Linux > 2.6: starttime in clock ticks, which must be converted)
+  string kernel_version = Kernel();
+  char major_version = kernel_version[0];
+  char minor_version = kernel_version[2];
+  if ( ((float)major_version > 2) && ((float)minor_version > 6) )
+    starttime = (starttime / sysconf(_SC_CLK_TCK));
+  // According to Linux manual page https://man7.org/linux/man-pages/man5/proc.5.html, the
+  // starttime is the time the process started after system boot (in ticks). So, one needs
+  // to substract it from the uptime of the system
+  long uptime = UpTime() - starttime;
+
+  return uptime;
 }
