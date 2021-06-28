@@ -184,7 +184,7 @@ long LinuxParser::ActiveJiffies(int pid) {
     for(int i = 1; i < 14; ++i) {
       linestream >> skip_values;
     }
-    linestream >> utime >> stime;
+    linestream >> utime >> stime >> cutime >> cstime;
   }
   active_jiffies = std::atol(utime.c_str()) + std::atol(stime.c_str()) + std::atol(cutime.c_str()) + std::atol(cstime.c_str());
   return active_jiffies;
