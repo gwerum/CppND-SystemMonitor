@@ -57,7 +57,7 @@ namespace LinuxParser {
   int Ram(int pid); // Done
   int Uid(int pid); // Done
   std::string User(int pid); // Done
-  long Uptime(int pid); // Done
+  long UpTime(int pid); // Done
 
 };  // namespace LinuxParser
 
