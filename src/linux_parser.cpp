@@ -33,7 +33,7 @@ T findValueByKey(std::string const &keyFilter, std::string const &filename) {
   std::string line, key;
   T value;
 
-  std::ifstream stream(kProcDirectory + filename);
+  std::ifstream stream(LinuxParser::kProcDirectory + filename);
   if (stream.is_open()) {
     while (std::getline(stream, line)) {
       std::istringstream linestream(line);
@@ -52,7 +52,7 @@ T getValueOfFile(std::string const &filename) {
   std::string line;
   T value;
 
-  std::ifstream stream(kProcDirectory + filename);
+  std::ifstream stream(LinuxParser::kProcDirectory + filename);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
