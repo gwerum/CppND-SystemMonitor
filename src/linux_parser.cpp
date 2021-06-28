@@ -118,7 +118,6 @@ float LinuxParser::MemoryUtilization()
   string mem_free_key = "MemFree:";
   float mem_total = findValueByKey<float>(mem_total_key, kMeminfoFilename);
   float mem_free = findValueByKey<float>(mem_free_key, kMeminfoFilename);
-  int mem_total, mem_available, mem_used;
   // Compute and return usage
   return (mem_total - mem_free) / mem_total;
 }
