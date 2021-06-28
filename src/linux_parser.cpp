@@ -116,8 +116,8 @@ float LinuxParser::MemoryUtilization()
 {
   string mem_total_key = "MemTotal:";
   string mem_free_key = "MemFree:";
-  float mem_total = findValueByKey<float>(mem_total_key, kProcDirectory + kMeminfoFilename);
-  float mem_free = findValueByKey<float>(mem_free_key, kProcDirectory + kMeminfoFilename);
+  float mem_total = findValueByKey<float>(mem_total_key, kMeminfoFilename);
+  float mem_free = findValueByKey<float>(mem_free_key, kMeminfoFilename);
   int mem_total, mem_available, mem_used;
   // Compute and return usage
   return (mem_total - mem_free) / mem_total;
@@ -220,14 +220,10 @@ long LinuxParser::ActiveJiffies(int pid) {
 
 // Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
-  string key;
-  int value;
-  std::ifstream filestream(kProcDirectory + kStatFilename);
-  if (filestream.is_open()) {
-    GotoLine(filestream, 9); // line 9 format: "processes 3273"
-    filestream >> key >> value;
-  }
-  return value;
+  string key = "processes";
+  // searching for value in line 9 with format: "processes 3273"
+  int total_processes = findValueByKey<int>(key, kStatFilename); 
+  return total_processes;
 }
 
 // Read and return the number of running processes
