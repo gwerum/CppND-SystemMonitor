@@ -28,6 +28,39 @@ std::ifstream& LinuxParser::GotoLine(std::ifstream& fileStream, unsigned int lin
     return fileStream;
 }
 
+template <typename T>
+T findValueByKey(std::string const &keyFilter, std::string const &filename) {
+  std::string line, key;
+  T value;
+
+  std::ifstream stream(kProcDirectory + filename);
+  if (stream.is_open()) {
+    while (std::getline(stream, line)) {
+      std::istringstream linestream(line);
+      while (linestream >> key >> value) {
+        if (key == keyFilter) {
+          return value;
+        }
+      }
+    }
+  }
+  return value;
+};
+
+template <typename T>
+T getValueOfFile(std::string const &filename) {
+  std::string line;
+  T value;
+
+  std::ifstream stream(kProcDirectory + filename);
+  if (stream.is_open()) {
+    std::getline(stream, line);
+    std::istringstream linestream(line);
+    linestream >> value;
+  }
+  return value;
+};
+
 //-----------------------------------------------------------------------------
 // System
 //-----------------------------------------------------------------------------
@@ -81,22 +114,13 @@ vector<int> LinuxParser::Pids() {
 // Returns the system memory utilization
 float LinuxParser::MemoryUtilization() 
 {
+  string mem_total_key = "MemTotal:";
+  string mem_free_key = "MemFree:";
+  float mem_total = findValueByKey<float>(mem_total_key, kProcDirectory + kMeminfoFilename);
+  float mem_free = findValueByKey<float>(mem_free_key, kProcDirectory + kMeminfoFilename);
   int mem_total, mem_available, mem_used;
-  float mem_usage;
-  string line, key;
-  std::ifstream filestream(kProcDirectory + kMeminfoFilename);
-  if (filestream.is_open()) {
-    // Get first line ("MemTotal:        3884328 kB")
-    GotoLine(filestream, 1);
-    filestream >> key >> mem_total;
-    // Get third line ("MemAvailable:    3618432 kB")
-    GotoLine(filestream, 3);
-    filestream >> key >> mem_available;
-  }
-  // Compute usage
-  mem_used = mem_total - mem_available;
-  mem_usage = (float) mem_used / (float) mem_total;
-  return mem_usage;
+  // Compute and return usage
+  return (mem_total - mem_free) / mem_total;
 }
 
 // Returns the system uptime
