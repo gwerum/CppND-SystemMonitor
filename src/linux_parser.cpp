@@ -194,7 +194,7 @@ long LinuxParser::ActiveJiffies(int pid) {
 // Process
 //-----------------------------------------------------------------------------
 
-// TODO: Read and return the total number of processes
+// Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
   string key;
   int value;
@@ -206,7 +206,7 @@ int LinuxParser::TotalProcesses() {
   return value;
 }
 
-// TODO: Read and return the number of running processes
+// Read and return the number of running processes
 int LinuxParser::RunningProcesses() {
   string key;
   int value;
@@ -280,7 +280,7 @@ string LinuxParser::User(int pid) {
   return user_name;
 }
 
-// Returns the uptime of a process
+// Returns the uptime of a process (in seconds)
 long LinuxParser::UpTime(int pid) { 
   long ticks = 0;
   string line;
