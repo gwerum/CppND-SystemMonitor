@@ -29,11 +29,11 @@ std::ifstream& LinuxParser::GotoLine(std::ifstream& fileStream, unsigned int lin
 }
 
 template <typename T>
-T findValueByKey(std::string const &keyFilter, std::string const &filename) {
+T findValueByKey(std::string const &keyFilter, std::string const &filepath) {
   std::string line, key;
   T value;
 
-  std::ifstream stream(LinuxParser::kProcDirectory + filename);
+  std::ifstream stream(filepath);
   if (stream.is_open()) {
     while (std::getline(stream, line)) {
       std::istringstream linestream(line);
@@ -48,11 +48,11 @@ T findValueByKey(std::string const &keyFilter, std::string const &filename) {
 };
 
 template <typename T>
-T getValueOfFile(std::string const &filename) {
+T getValueOfFile(std::string const &filepath) {
   std::string line;
   T value;
 
-  std::ifstream stream(LinuxParser::kProcDirectory + filename);
+  std::ifstream stream(filepath);
   if (stream.is_open()) {
     std::getline(stream, line);
     std::istringstream linestream(line);
@@ -114,10 +114,11 @@ vector<int> LinuxParser::Pids() {
 // Returns the system memory utilization
 float LinuxParser::MemoryUtilization() 
 {
+  string file_path = kProcDirectory + kMeminfoFilename;
   string mem_total_key = "MemTotal:";
   string mem_free_key = "MemFree:";
-  float mem_total = findValueByKey<float>(mem_total_key, kMeminfoFilename);
-  float mem_free = findValueByKey<float>(mem_free_key, kMeminfoFilename);
+  float mem_total = findValueByKey<float>(mem_total_key, file_path);
+  float mem_free = findValueByKey<float>(mem_free_key, file_path);
   // Compute and return usage
   return (mem_total - mem_free) / mem_total;
 }
@@ -219,22 +220,20 @@ long LinuxParser::ActiveJiffies(int pid) {
 
 // Read and return the total number of processes
 int LinuxParser::TotalProcesses() {
+  string file_path = kProcDirectory + kStatFilename;
   string key = "processes";
   // searching for value in line 9 with format: "processes 3273"
-  int total_processes = findValueByKey<int>(key, kStatFilename); 
+  int total_processes = findValueByKey<int>(key, file_path); 
   return total_processes;
 }
 
 // Read and return the number of running processes
 int LinuxParser::RunningProcesses() {
-  string key;
-  int value;
-  std::ifstream filestream(kProcDirectory + kStatFilename);
-  if (filestream.is_open()) {
-    GotoLine(filestream, 10); // line 10 format: "procs_running 1"
-    filestream >> key >> value;
-  }
-  return value;
+  string file_path = kProcDirectory + kStatFilename;
+  string key = "procs_running";
+  // searching for value in line 10 with format: "procs_running 1"
+  int running_processes = findValueByKey<int>(key, file_path); 
+  return running_processes;
  }
 
 // Reads and returns the command associated with a process
@@ -255,7 +254,7 @@ int LinuxParser::Ram(int pid) {
   int ram_usage = 0;
   std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatusFilename);
   if (filestream.is_open()) {
-    while (std::getline(filestream, line)) {    // line format: root:x:0:0:root:/root:/bin/bash
+    while (std::getline(filestream, line)) {
       std::replace(line.begin(), line.end(), ':', ' ');
       std::istringstream linestream(line);
       while (linestream >> key >> ram_usage) {
@@ -269,13 +268,11 @@ int LinuxParser::Ram(int pid) {
 
 // Returns the user ID associated with a process
 int LinuxParser::Uid(int pid) {
-  string key;
-  int uid = -1;
-  std::ifstream filestream(kProcDirectory + std::to_string(pid) + kStatusFilename);
-  if (filestream.is_open()) {
-    GotoLine(filestream, 9); // line 9 format: "Uid:	0	0	0	0"
-    filestream >> key >> uid;
-  }
+  string file_path = kProcDirectory + std::to_string(pid) + kStatusFilename;
+  string key = "Uid:";
+  // Searching for value in line 9 with format: "Uid:	0	0	0	0"
+  int uid = findValueByKey<int>(key, file_path);
+
   return uid;
 }
 
